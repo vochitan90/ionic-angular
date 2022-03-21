@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { AuthService } from './auth.service';
@@ -10,6 +11,8 @@ import { AuthService } from './auth.service';
 })
 export class AuthPage implements OnInit {
   isLoading = false;
+  isLogin = true;
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -32,7 +35,16 @@ export class AuthPage implements OnInit {
           this.isLoading = false;
           loadingEl.dismiss();
           this.router.navigateByUrl('/places/tabs/discover');
-        }, 1500);
+        }, 2000);
       });
+  }
+
+  onSubmit(form: NgForm) {
+    debugger;
+    console.log(form);
+  }
+
+  onClickAuthMode() {
+    this.isLogin = !this.isLogin;
   }
 }
