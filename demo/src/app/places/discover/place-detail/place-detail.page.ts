@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import {
   ActionSheetController,
   ModalController,
@@ -26,8 +26,9 @@ export class PlaceDetailPage implements OnInit {
 
   ngOnInit() {
     this.route.paramMap.subscribe((paramMap) => {
+      console.log(paramMap);
       if (!paramMap.has('placeId')) {
-        this.navCtrl.navigateBack('/places/tabs/offer');
+        this.navCtrl.navigateBack('/places/tabs/discover');
         return;
       }
       this.place = this.placesServices.getPlace(paramMap.get('placeId'));

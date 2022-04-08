@@ -4,13 +4,85 @@
       <ion-back-button defaultHref="/places/tabs/offers"></ion-back-button>
     </ion-buttons>
     <ion-title>New Offer</ion-title>
+    <ion-buttons slot="primary">
+      <ion-button (click)="onCreateOffer()">
+        <ion-icon name="checkmark" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-grid>
-    <ion-row class="ion-align-items-center ion-no-padding">
-      <ion-col class="ion-text-center"> text center</ion-col>
-    </ion-row>
-  </ion-grid>
+  <form [formGroup]="form">
+    <ion-grid>
+      <ion-row>
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-item>
+            <ion-label position="floating">Title </ion-label>
+            <ion-input
+              type="text"
+              autocomplete
+              autocorrect
+              formControlName="title"
+            >
+            </ion-input>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-item>
+            <ion-label position="floating">Short Description </ion-label>
+            <ion-textarea formControlName="description" rows="3">
+            </ion-textarea>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-item>
+            <ion-label position="floating">Price </ion-label>
+            <ion-input type="number" formControlName="price"> </ion-input>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-item button="true" id="open-date-input1">
+            <ion-label>Date From</ion-label>
+            <ion-text slot="end">{{ dateForm }}</ion-text>
+            <ion-popover trigger="open-date-input1" show-backdrop="false">
+              <ng-template>
+                <ion-datetime
+                  #popoverDateForm
+                  presentation="date"
+                  formControlName="dateForm"
+                  (ionChange)="dateForm = formatDate(popoverDateForm.value)"
+                ></ion-datetime>
+              </ng-template>
+            </ion-popover>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-item button="true" id="open-date-input2">
+            <ion-label>Date To</ion-label>
+            <ion-text slot="end">{{ dateTo }}</ion-text>
+            <ion-popover trigger="open-date-input2" show-backdrop="true">
+              <ng-template>
+                <ion-datetime
+                  #popoverDateTo
+                  presentation="date"
+                  formControlName="dateTo"
+                  (ionChange)="dateTo = formatDate(popoverDateTo.value)"
+                ></ion-datetime>
+              </ng-template>
+            </ion-popover>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
 </ion-content>

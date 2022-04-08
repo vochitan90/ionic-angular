@@ -9,7 +9,7 @@ import { PlacesService } from '../places.service';
   styleUrls: ['./discover.page.scss'],
 })
 export class DiscoverPage implements OnInit {
-  placedPlaces: Place[];
+  loadedPlaces: Place[];
   listedLoadedPlaces: Place[];
 
   constructor(
@@ -18,7 +18,7 @@ export class DiscoverPage implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.placedPlaces = this.placeService.places;
+    this.loadedPlaces = this.placeService.places;
     this.listedLoadedPlaces = this.placeService.places.slice(1);
   }
 
