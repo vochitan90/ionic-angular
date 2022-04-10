@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { format, parseISO } from 'date-fns';
+import { PlacesService } from '../../places.service';
+import { LoadingController } from '@ionic/angular';
 
 @Component({
   selector: 'app-new-offer',
@@ -13,7 +16,12 @@ export class NewOfferPage implements OnInit {
   dateForm = '';
   dateTo = '';
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private placesService: PlacesService,
+    private router: Router,
+    private loadingCtrl: LoadingController
+  ) {}
 
   ngOnInit() {
     this.form = this.fb.group({
@@ -49,11 +57,40 @@ export class NewOfferPage implements OnInit {
     });
   }
 
-  onCreateOffer() {
-    console.log('create...', this.form.value);
+  formatDate(value: string) {
+    return format(parseISO(value), 'yyyy-MM-dd');
   }
 
-  formatDate(value: string) {
-    return format(parseISO(value), 'MM/dd/yyyy');
+  onCreateOffer() {
+    if (!this.form.valid) {
+      return;
+    }
+
+    this.loadingCtrl
+      .create({
+        message: 'Creating place...',
+      })
+      .then((loadingEl) => {
+        loadingEl.present();
+        this.form.patchValue({
+          dateForm: this.formatDate(this.form.value?.dateForm),
+          dateTo: this.formatDate(this.form.value?.dateTo),
+        });
+        console.log('create...', this.form.value);
+
+        this.placesService
+          .addPlace(
+            this.form.value.title,
+            this.form.value.description,
+            +this.form.value.price,
+            new Date(this.form.value.dateForm),
+            new Date(this.form.value.dateTo)
+          )
+          .subscribe((_) => {
+            loadingEl.dismiss();
+            this.form.reset();
+            this.router.navigateByUrl('places/tabs/offers');
+          });
+      });
   }
 }

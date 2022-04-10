@@ -85,6 +85,15 @@ ion-button {
   --box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
 }
 
+ion-toolbar {
+  ion-button,
+  ion-back-button,
+  ion-menu-button,
+  .sc-ion-back-button-ios-h {
+    --color: white;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   /*
    * Dark Colors
@@ -236,6 +245,8 @@ ion-button {
     --ion-item-background: #1e1e1e;
 
     --ion-toolbar-background: #1f1f1f;
+
+    --ion-toolbar-color: var(--ion-color-primary-contrast)
 
     --ion-tab-bar-background: #1f1f1f;
 

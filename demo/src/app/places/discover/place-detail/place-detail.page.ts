@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   ActionSheetController,
@@ -8,14 +8,17 @@ import {
 import { CreateBookingComponent } from '../../../bookings/create-booking/create-booking.component';
 import { Place } from '../../place.model';
 import { PlacesService } from '../../places.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-place-detail',
   templateUrl: './place-detail.page.html',
   styleUrls: ['./place-detail.page.scss'],
 })
-export class PlaceDetailPage implements OnInit {
+export class PlaceDetailPage implements OnInit, OnDestroy {
   place: Place;
+
+  placeSub: Subscription;
   constructor(
     private route: ActivatedRoute,
     private navCtrl: NavController,
@@ -31,8 +34,16 @@ export class PlaceDetailPage implements OnInit {
         this.navCtrl.navigateBack('/places/tabs/discover');
         return;
       }
-      this.place = this.placesServices.getPlace(paramMap.get('placeId'));
+      this.placesServices
+        .getPlace(paramMap.get('placeId'))
+        .subscribe((place) => {
+          this.place = place;
+        });
     });
+  }
+
+  ngOnDestroy(): void {
+    this.placeSub?.unsubscribe();
   }
 
   onBookPlace() {
@@ -54,7 +65,7 @@ export class PlaceDetailPage implements OnInit {
           },
           {
             text: 'Cancel',
-            role: 'destructive ',
+            role: 'cancel ',
           },
         ],
       })
@@ -68,7 +79,7 @@ export class PlaceDetailPage implements OnInit {
     this.modalCtrl
       .create({
         component: CreateBookingComponent,
-        componentProps: { selectedPlace: this.place },
+        componentProps: { selectedPlace: this.place, selectedMode: mode },
       })
       .then((modalEl) => {
         modalEl.present();

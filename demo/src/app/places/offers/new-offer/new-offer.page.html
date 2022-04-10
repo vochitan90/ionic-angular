@@ -5,7 +5,7 @@
     </ion-buttons>
     <ion-title>New Offer</ion-title>
     <ion-buttons slot="primary">
-      <ion-button (click)="onCreateOffer()">
+      <ion-button (click)="onCreateOffer()" [disabled]="!form.valid">
         <ion-icon name="checkmark" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -16,6 +16,7 @@
   <form [formGroup]="form">
     <ion-grid>
       <ion-row>
+        <!-- Title -->
         <ion-col size-sm="6" offset-sm="3">
           <ion-item>
             <ion-label position="floating">Title </ion-label>
@@ -29,6 +30,8 @@
           </ion-item>
         </ion-col>
       </ion-row>
+
+      <!-- Description -->
       <ion-row>
         <ion-col size-sm="6" offset-sm="3">
           <ion-item>
@@ -38,6 +41,13 @@
           </ion-item>
         </ion-col>
       </ion-row>
+      <ion-row
+        *ngIf="form.get('description').invalid &&  form.get('description').touched"
+      >
+        <p>Description must be between 1 and 100 characters</p>
+      </ion-row>
+
+      <!-- Price -->
       <ion-row>
         <ion-col size-sm="6" offset-sm="3">
           <ion-item>
@@ -46,14 +56,18 @@
           </ion-item>
         </ion-col>
       </ion-row>
+
+      <!-- Date From -->
       <ion-row>
         <ion-col size-sm="6" offset-sm="3">
-          <ion-item button="true" id="open-date-input1">
-            <ion-label>Date From</ion-label>
+          <ion-item button="true" id="dateForm">
+            <ion-label>Available From</ion-label>
             <ion-text slot="end">{{ dateForm }}</ion-text>
-            <ion-popover trigger="open-date-input1" show-backdrop="false">
+            <ion-popover trigger="dateForm" show-backdrop="false">
               <ng-template>
                 <ion-datetime
+                  min="2019-01-01"
+                  max="2025-12-31"
                   #popoverDateForm
                   presentation="date"
                   formControlName="dateForm"
@@ -65,14 +79,17 @@
         </ion-col>
       </ion-row>
 
+      <!-- Date To -->
       <ion-row>
         <ion-col size-sm="6" offset-sm="3">
-          <ion-item button="true" id="open-date-input2">
-            <ion-label>Date To</ion-label>
+          <ion-item button="true" id="dateTo">
+            <ion-label>Available To</ion-label>
             <ion-text slot="end">{{ dateTo }}</ion-text>
-            <ion-popover trigger="open-date-input2" show-backdrop="true">
+            <ion-popover trigger="dateTo" show-backdrop="true">
               <ng-template>
                 <ion-datetime
+                  min="2019-01-02"
+                  max="2025-12-31"
                   #popoverDateTo
                   presentation="date"
                   formControlName="dateTo"

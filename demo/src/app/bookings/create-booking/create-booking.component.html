@@ -10,6 +10,140 @@
 </ion-header>
 
 <ion-content class="ion-text-center ion-padding">
-  <h1>{{ selectedPlace.description }}</h1>
-  <ion-button color="primary" (click)="onBookPlace()">Book!</ion-button>
+  <form (ngSubmit)="onBookPlace(f)" #f="ngForm">
+    <ion-grid>
+      <ion-row>
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-item>
+            <ion-label position="floating">First Name</ion-label>
+            <ion-input
+              type="text"
+              ngModel
+              name="first-name"
+              required
+            ></ion-input>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+      <!-- Last Name -->
+      <ion-row>
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-item>
+            <ion-label position="floating">Last Name</ion-label>
+            <ion-input
+              type="text"
+              ngModel
+              name="last-name"
+              required
+            ></ion-input>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+      <!-- Number of guest -->
+      <ion-row>
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-item>
+            <ion-label position="floating">Number of guest</ion-label>
+            <ion-select
+              type="text"
+              [ngModel]="'2'"
+              name="guest-number"
+              required
+            >
+              <ion-select-option value="1">1</ion-select-option>
+              <ion-select-option value="2">2</ion-select-option>
+              <ion-select-option value="3">3</ion-select-option>
+            </ion-select>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+      <!-- From -->
+      <ion-row>
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-item button="true" id="dateForm">
+            <ion-label position="floating">From</ion-label>
+            <ion-input [(ngModel)]="dateForm" name="date-from"></ion-input>
+
+            <!-- <ion-button fill="clear" id="open-date-input-2">
+              <ion-icon icon="calendar"></ion-icon>
+            </ion-button> -->
+            <ion-popover trigger="dateForm" show-backdrop="false">
+              <ng-template>
+                <ion-datetime
+                  [min]="selectedPlace.availableForm.toISOString()"
+                  [max]="selectedPlace.availableTo.toISOString()"
+                  [ngModel]="startDate"
+                  #popoverDateForm="ngModel"
+                  presentation="date"
+                  name="date-from"
+                  (ionChange)="dateForm = formatDate(popoverDateForm.value)"
+                ></ion-datetime>
+              </ng-template>
+            </ion-popover>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+      <!-- To new way -->
+      <ion-row>
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-item button="true" id="dateTo" [disabled]="!dateForm">
+            <ion-label position="floating">To</ion-label>
+            <ion-input [(ngModel)]="dateTo" name="date-to"></ion-input>
+            <ion-popover trigger="dateTo" show-backdrop="false">
+              <ng-template>
+                <ion-datetime
+                  [min]="getDateFormSelected(dateForm)"
+                  [max]="selectedPlace.availableTo.toISOString()"
+                  #popoverDateTo="ngModel"
+                  [ngModel]="endDate"
+                  presentation="date"
+                  name="date-to"
+                  (ionChange)="dateTo = formatDate(popoverDateTo.value)"
+                ></ion-datetime>
+              </ng-template>
+            </ion-popover>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+
+      <!-- To old way-->
+      <!-- <ion-row>
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-item button="true" id="dateTo" [disabled]="!dateForm">
+            <ion-label>To</ion-label>
+            <ion-text slot="end">{{ dateTo }}</ion-text>
+            <ion-popover trigger="dateTo" show-backdrop="false">
+              <ng-template>
+                <ion-datetime
+                  [min]="getDateFormSelected(dateForm)"
+                  [max]="selectedPlace.availableTo.toISOString()"
+                  #popoverDateTo="ngModel"
+                  [ngModel]="endDate"
+                  presentation="date"
+                  name="date-to"
+                  (ionChange)="dateTo = formatDate(popoverDateTo.value)"
+                ></ion-datetime>
+              </ng-template>
+            </ion-popover>
+          </ion-item>
+        </ion-col>
+      </ion-row> -->
+
+      <ion-row>
+        <ion-col size-sm="6" offset-sm="3">
+          <ion-button
+            color="primary"
+            type="submit"
+            expand="block"
+            [disabled]="!f.valid"
+            >Book!</ion-button
+          >
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </form>
 </ion-content>
