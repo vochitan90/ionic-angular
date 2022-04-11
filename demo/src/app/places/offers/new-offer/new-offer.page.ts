@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { format, parseISO } from 'date-fns';
 import { PlacesService } from '../../places.service';
 import { LoadingController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-new-offer',
@@ -78,6 +79,7 @@ export class NewOfferPage implements OnInit {
         });
         console.log('create...', this.form.value);
 
+        debugger;
         this.placesService
           .addPlace(
             this.form.value.title,
@@ -86,7 +88,7 @@ export class NewOfferPage implements OnInit {
             new Date(this.form.value.dateForm),
             new Date(this.form.value.dateTo)
           )
-          .subscribe((_) => {
+          .subscribe((resData) => {
             loadingEl.dismiss();
             this.form.reset();
             this.router.navigateByUrl('places/tabs/offers');

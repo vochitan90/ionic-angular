@@ -9,6 +9,10 @@ import { CreateBookingComponent } from '../../../bookings/create-booking/create-
 import { Place } from '../../place.model';
 import { PlacesService } from '../../places.service';
 import { Subscription } from 'rxjs';
+import { BookingService } from 'src/app/bookings/booking.service';
+import { Booking } from 'src/app/bookings/booking.model';
+import { LoadingController } from '@ionic/angular';
+import { AuthService } from 'src/app/auth/auth.service';
 
 @Component({
   selector: 'app-place-detail',
@@ -17,6 +21,7 @@ import { Subscription } from 'rxjs';
 })
 export class PlaceDetailPage implements OnInit, OnDestroy {
   place: Place;
+  isBookable = false;
 
   placeSub: Subscription;
   constructor(
@@ -24,7 +29,10 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
     private placesServices: PlacesService,
     private modalCtrl: ModalController,
-    private actionSheetCtrl: ActionSheetController
+    private actionSheetCtrl: ActionSheetController,
+    private bookingService: BookingService,
+    private loadingController: LoadingController,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -34,10 +42,12 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         this.navCtrl.navigateBack('/places/tabs/discover');
         return;
       }
-      this.placesServices
+      this.placeSub = this.placesServices
         .getPlace(paramMap.get('placeId'))
         .subscribe((place) => {
           this.place = place;
+          debugger;
+          this.isBookable = place.userId !== this.authService.userId;
         });
     });
   }
@@ -86,10 +96,30 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         return modalEl.onDidDismiss();
       })
       .then((resultData) => {
-        console.log(resultData.data, resultData.role);
-        if (resultData.role === 'confirm') {
-          console.log('BOOKED!');
-        }
+        this.loadingController
+          .create({
+            message: 'Adding booking...',
+          })
+          .then((loadingEl) => {
+            if (resultData.role === 'confirm') {
+              loadingEl.present();
+              const newBooking = resultData.data.bookingData;
+              this.bookingService
+                .addBooking(
+                  this.place.id,
+                  this.place.title,
+                  this.place.imageUrl,
+                  newBooking.firstName,
+                  newBooking.lastName,
+                  newBooking.guestNumber,
+                  newBooking.startDate,
+                  newBooking.endDate
+                )
+                .subscribe((_) => {
+                  loadingEl.dismiss();
+                });
+            }
+          });
       });
   }
 }

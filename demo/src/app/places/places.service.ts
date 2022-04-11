@@ -1,51 +1,73 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { Place } from './place.model';
-import { delay, filter, map, take, tap } from 'rxjs/operators';
+import { delay, map, switchMap, take, tap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
 
+// new Place(
+//       'p1',
+//       'Manhattan Mansion',
+//       'In the heart of New York city',
+//       'https://imgs.6sqft.com/wp-content/uploads/2014/06/21042533/Carnegie-Mansion-nyc.jpg',
+//       149.99,
+//       new Date('2019-01-01'),
+//       new Date('2025-12-31'),
+//       'xyz'
+//     ),
+//     new Place(
+//       'p2',
+//       'Amour Toujours',
+//       'A romantic place in Paris!',
+//       'https://resources.tidal.com/images/ab09f446/1def/4bcf/8d5e/ddb9ee024c09/640x640.jpg',
+//       189.99,
+//       new Date('2019-01-01'),
+//       new Date('2025-12-31'),
+//       'abc'
+//     ),
+//     new Place(
+//       'p3',
+//       'The Foggy Palace',
+//       'Not your average city trip',
+//       'https://image.shutterstock.com/z/stock-photo-fairytale-in-a-foggy-castle-palace-with-fog-1252568530.jpg',
+//       99.99,
+//       new Date('2019-01-01'),
+//       new Date('2025-12-31'),
+//       'abc'
+//     ),
 @Injectable({
   providedIn: 'root',
 })
 export class PlacesService {
-  private _places = new BehaviorSubject<Place[]>([
-    new Place(
-      'p1',
-      'Manhattan Mansion',
-      'In the heart of New York city',
-      'https://imgs.6sqft.com/wp-content/uploads/2014/06/21042533/Carnegie-Mansion-nyc.jpg',
-      149.99,
-      new Date('2019-01-01'),
-      new Date('2025-12-31'),
-      'abc'
-    ),
-    new Place(
-      'p2',
-      'Amour Toujours',
-      'A romantic place in Paris!',
-      'https://resources.tidal.com/images/ab09f446/1def/4bcf/8d5e/ddb9ee024c09/640x640.jpg',
-      189.99,
-      new Date('2019-01-01'),
-      new Date('2025-12-31'),
-      'abc'
-    ),
-    new Place(
-      'p3',
-      'The Foggy Palace',
-      'Not your average city trip',
-      'https://image.shutterstock.com/z/stock-photo-fairytale-in-a-foggy-castle-palace-with-fog-1252568530.jpg',
-      99.99,
-      new Date('2019-01-01'),
-      new Date('2025-12-31'),
-      'abc'
-    ),
-  ]);
+  private _places = new BehaviorSubject<Place[]>([]);
 
   get places() {
     return this._places.asObservable();
   }
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private httpClient: HttpClient
+  ) {}
+
+  fetchPlaces() {
+    return this.httpClient
+      .get<{ [key: string]: Place }>(
+        'https://ionic-demo-c2342-default-rtdb.firebaseio.com/offered-places.json'
+      )
+      .pipe(
+        take(1),
+        map((resData) => {
+          return Object.keys(resData).map(function (key) {
+            resData[key].id = key;
+            return resData[key];
+          });
+        }),
+        tap((places) => {
+          return this._places.next(places);
+        })
+      );
+  }
 
   getPlace(id: string) {
     return this.places.pipe(
@@ -60,8 +82,9 @@ export class PlacesService {
     price: number,
     dateFrom: Date,
     dateTo: Date
-  ) {
-    const newPlace = new Place(
+  ): Observable<Place[]> {
+    let generatedId: string;
+    let newPlace = new Place(
       Math.random().toString(),
       title,
       description,
@@ -74,13 +97,23 @@ export class PlacesService {
 
     // take 1 mean take one object and then automatically cancel the subscription =>
     // get current latest list of places and dont listen to the future places
-    return this.places.pipe(
-      take(1),
-      delay(1000),
-      tap((places) => {
-        this._places.next([...places, newPlace]);
-      })
-    );
+    return this.httpClient
+      .post<{ name: string }>(
+        'https://ionic-demo-c2342-default-rtdb.firebaseio.com/offered-places.json',
+        { ...newPlace, id: null }
+      )
+      .pipe(
+        switchMap((resData) => {
+          debugger;
+          generatedId = resData.name;
+          return this.places;
+        }),
+        take(1),
+        tap((places) => {
+          newPlace.id = generatedId;
+          return this._places.next(places.concat(newPlace));
+        })
+      );
   }
 
   editPlace(place: Place) {

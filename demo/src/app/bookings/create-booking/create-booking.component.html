@@ -65,12 +65,15 @@
         <ion-col size-sm="6" offset-sm="3">
           <ion-item button="true" id="dateForm">
             <ion-label position="floating">From</ion-label>
-            <ion-input [(ngModel)]="dateForm" name="date-from"></ion-input>
-
-            <!-- <ion-button fill="clear" id="open-date-input-2">
+            <ion-input
+              type="text"
+              [(ngModel)]="dateForm"
+              name="date-from"
+            ></ion-input>
+            <!-- <ion-button fill="clear" id="dateForm">
               <ion-icon icon="calendar"></ion-icon>
             </ion-button> -->
-            <ion-popover trigger="dateForm" show-backdrop="false">
+            <ion-popover trigger="dateForm" show-backdrop="true">
               <ng-template>
                 <ion-datetime
                   [min]="selectedPlace.availableForm.toISOString()"
@@ -78,7 +81,7 @@
                   [ngModel]="startDate"
                   #popoverDateForm="ngModel"
                   presentation="date"
-                  name="date-from"
+                  name="datetime-from"
                   (ionChange)="dateForm = formatDate(popoverDateForm.value)"
                 ></ion-datetime>
               </ng-template>
@@ -92,8 +95,12 @@
         <ion-col size-sm="6" offset-sm="3">
           <ion-item button="true" id="dateTo" [disabled]="!dateForm">
             <ion-label position="floating">To</ion-label>
-            <ion-input [(ngModel)]="dateTo" name="date-to"></ion-input>
-            <ion-popover trigger="dateTo" show-backdrop="false">
+            <ion-input
+              type="text"
+              [(ngModel)]="dateTo"
+              name="date-to"
+            ></ion-input>
+            <ion-popover trigger="dateTo" show-backdrop="true">
               <ng-template>
                 <ion-datetime
                   [min]="getDateFormSelected(dateForm)"
@@ -101,7 +108,7 @@
                   #popoverDateTo="ngModel"
                   [ngModel]="endDate"
                   presentation="date"
-                  name="date-to"
+                  name="datetime-to"
                   (ionChange)="dateTo = formatDate(popoverDateTo.value)"
                 ></ion-datetime>
               </ng-template>

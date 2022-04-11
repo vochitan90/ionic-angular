@@ -3,6 +3,7 @@ import { MenuController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { Place } from '../place.model';
 import { PlacesService } from '../places.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-discover',
@@ -12,18 +13,21 @@ import { PlacesService } from '../places.service';
 export class DiscoverPage implements OnInit, OnDestroy {
   loadedPlaces: Place[];
   listedLoadedPlaces: Place[];
+  relevantPlaces: Place[];
 
   private placesSub: Subscription;
 
   constructor(
     private placeService: PlacesService,
-    private menuCtrl: MenuController
+    private menuCtrl: MenuController,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.placesSub = this.placeService.places.subscribe((places: Place[]) => {
       this.loadedPlaces = places;
-      this.listedLoadedPlaces = this.loadedPlaces.slice(1);
+      this.relevantPlaces = this.loadedPlaces;
+      this.listedLoadedPlaces = this.relevantPlaces.slice(1);
     });
   }
 
@@ -39,6 +43,13 @@ export class DiscoverPage implements OnInit, OnDestroy {
 
   onFilterUpdate(event: Event) {
     const detail = (<CustomEvent>event).detail;
-    console.log(detail);
+    if (detail.value === 'all') {
+      this.relevantPlaces = this.loadedPlaces;
+      this.listedLoadedPlaces = this.relevantPlaces.slice(1);
+    } else {
+      this.relevantPlaces = this.loadedPlaces.filter(
+        (place) => place.userId !== this.authService.userId
+      );
+    }
   }
 }
