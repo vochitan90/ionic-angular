@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { Place } from './place.model';
-import { delay, map, switchMap, take, tap } from 'rxjs/operators';
+import { map, switchMap, take, tap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 
 // new Place(
@@ -50,6 +50,7 @@ export class PlacesService {
     private httpClient: HttpClient
   ) {}
 
+  // Get all data from server
   fetchPlaces() {
     return this.httpClient
       .get<{ [key: string]: Place }>(
@@ -58,10 +59,12 @@ export class PlacesService {
       .pipe(
         take(1),
         map((resData) => {
-          return Object.keys(resData).map(function (key) {
-            resData[key].id = key;
-            return resData[key];
-          });
+          return resData
+            ? Object.keys(resData).map(function (key) {
+                resData[key].id = key;
+                return resData[key];
+              })
+            : [];
         }),
         tap((places) => {
           return this._places.next(places);
@@ -70,10 +73,17 @@ export class PlacesService {
   }
 
   getPlace(id: string) {
-    return this.places.pipe(
-      take(1),
-      map((places) => places.find((place) => place.id === id))
-    );
+    return this.httpClient
+      .get(
+        `https://ionic-demo-c2342-default-rtdb.firebaseio.com/offered-places/${id}.json`
+      )
+      .pipe(
+        map((place: Place) => {
+          place.id = id;
+          console.log(place);
+          return { ...place };
+        })
+      );
   }
 
   addPlace(
@@ -104,7 +114,6 @@ export class PlacesService {
       )
       .pipe(
         switchMap((resData) => {
-          debugger;
           generatedId = resData.name;
           return this.places;
         }),
@@ -116,15 +125,30 @@ export class PlacesService {
       );
   }
 
-  editPlace(place: Place) {
+  updatePlace(place: Place) {
+    let loadedData = [];
     return this.places.pipe(
       take(1),
-      delay(1000),
-      tap((places) => {
+      switchMap((places) => {
+        if (!places || places.length <= 0) {
+          return this.fetchPlaces();
+        } else {
+          return of(places);
+        }
+      }),
+      switchMap((places) => {
         const findIndex = places.findIndex((x) => x.id === place.id);
         places[findIndex].title = place.title;
         places[findIndex].description = place.description;
-        this._places.next([...places]);
+
+        loadedData = places;
+        return this.httpClient.put(
+          `https://ionic-demo-c2342-default-rtdb.firebaseio.com/offered-places/${place.id}.json`,
+          { ...places[findIndex], id: null }
+        );
+      }),
+      tap(() => {
+        return this._places.next([...loadedData]);
       })
     );
   }

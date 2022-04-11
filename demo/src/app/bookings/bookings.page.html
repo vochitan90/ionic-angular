@@ -8,7 +8,24 @@
 </ion-header>
 
 <ion-content>
-  <ion-grid *ngIf="!loadedBookings ||  loadedBookings.length <= 0">
+  <ion-grid *ngIf="isLoading">
+    <ion-row>
+      <ion-col
+        class="ion-text-center"
+        size-md="6"
+        offset-md="3"
+        size-sm="6"
+        offset-sm="3"
+        size-xs="12"
+      >
+        <ion-spinner></ion-spinner>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-grid
+    *ngIf="!isLoading && (!loadedBookings ||  loadedBookings.length <= 0)"
+  >
     <ion-row>
       <ion-col
         class="ion-text-center"
@@ -32,6 +49,9 @@
             #slidingBooking
           >
             <ion-item>
+              <ion-avatar slot="start">
+                <ion-img [src]="booking.placeImage"></ion-img>
+              </ion-avatar>
               <ion-label>
                 <h5>{{booking.placeTitle}}</h5>
                 <p>Guests: {{booking.guestNumber}}</p>
