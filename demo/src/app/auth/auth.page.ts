@@ -3,6 +3,7 @@ import { NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoadingController } from '@ionic/angular';
 import { AuthService } from './auth.service';
+import { element } from 'protractor';
 
 @Component({
   selector: 'app-auth',
@@ -42,6 +43,16 @@ export class AuthPage implements OnInit {
   onSubmit(form: NgForm) {
     debugger;
     console.log(form);
+    if (!form.valid) {
+      return;
+    }
+    const email = form.value.email;
+    const password = form.value.password;
+    if (this.isLogin) {
+      // send request to login servers
+    } else {
+      // send a request to signup servers
+    }
   }
 
   onClickAuthMode() {
