@@ -94,35 +94,42 @@ export class PlacesService {
     dateTo: Date
   ): Observable<Place[]> {
     let generatedId: string;
-    let newPlace = new Place(
-      Math.random().toString(),
-      title,
-      description,
-      'https://image.shutterstock.com/z/stock-photo-fairytale-in-a-foggy-castle-palace-with-fog-1252568530.jpg',
-      price,
-      dateFrom,
-      dateTo,
-      this.authService.userId
-    );
 
-    // take 1 mean take one object and then automatically cancel the subscription =>
-    // get current latest list of places and dont listen to the future places
-    return this.httpClient
-      .post<{ name: string }>(
-        'https://ionic-demo-c2342-default-rtdb.firebaseio.com/offered-places.json',
-        { ...newPlace, id: null }
-      )
-      .pipe(
-        switchMap((resData) => {
-          generatedId = resData.name;
-          return this.places;
-        }),
-        take(1),
-        tap((places) => {
-          newPlace.id = generatedId;
-          return this._places.next(places.concat(newPlace));
-        })
-      );
+    let newPlace: Place;
+    return this.authService.userId.pipe(
+      take(1),
+      switchMap((userId) => {
+        if (!userId) {
+          throw new Error('User Not Found!');
+        }
+        newPlace = new Place(
+          Math.random().toString(),
+          title,
+          description,
+          'https://image.shutterstock.com/z/stock-photo-fairytale-in-a-foggy-castle-palace-with-fog-1252568530.jpg',
+          price,
+          dateFrom,
+          dateTo,
+          userId
+        );
+
+        return this.httpClient.post<{ name: string }>(
+          'https://ionic-demo-c2342-default-rtdb.firebaseio.com/offered-places.json',
+          { ...newPlace, id: null }
+        );
+      }),
+      switchMap((resData) => {
+        generatedId = resData.name;
+        return this.places;
+      }),
+      // take 1 mean take one object and then automatically cancel the subscription =>
+      // get current latest list of places and dont listen to the future places
+      take(1),
+      tap((places) => {
+        newPlace.id = generatedId;
+        return this._places.next(places.concat(newPlace));
+      })
+    );
   }
 
   updatePlace(place: Place) {

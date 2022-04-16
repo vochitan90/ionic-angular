@@ -8,11 +8,12 @@ import {
 import { CreateBookingComponent } from '../../../bookings/create-booking/create-booking.component';
 import { Place } from '../../place.model';
 import { PlacesService } from '../../places.service';
-import { Subscription } from 'rxjs';
+import { of, Subscription } from 'rxjs';
 import { BookingService } from 'src/app/bookings/booking.service';
 import { Booking } from 'src/app/bookings/booking.model';
 import { LoadingController, AlertController } from '@ionic/angular';
 import { AuthService } from 'src/app/auth/auth.service';
+import { tap, switchMap, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-place-detail',
@@ -45,13 +46,25 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         return;
       }
       this.isLoading = true;
-      this.placeSub = this.placesServices
-        .getPlace(paramMap.get('placeId'))
+
+      let fetchedUserId: string;
+      this.authService.userId
+        .pipe(take(1))
+        .pipe(
+          switchMap((userId) => {
+            if (!userId) {
+              throw new Error('Found no user!');
+            }
+            userId = userId;
+            return this.placesServices.getPlace(paramMap.get('placeId'));
+          })
+        )
         .subscribe(
           (place) => {
             this.isLoading = false;
             this.place = place;
-            this.isBookable = place.userId !== this.authService.userId;
+
+            this.isBookable = place.userId !== fetchedUserId;
           },
           (error) => {
             this.alertCtrl

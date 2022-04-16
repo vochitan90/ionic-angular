@@ -79,7 +79,6 @@ export class NewOfferPage implements OnInit {
         });
         console.log('create...', this.form.value);
 
-        debugger;
         this.placesService
           .addPlace(
             this.form.value.title,

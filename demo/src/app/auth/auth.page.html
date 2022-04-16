@@ -65,13 +65,12 @@
           <ion-button
             type="submit"
             color="primary"
-            (click)="onLogin()"
             class="ion-padding"
             expand="block"
             [disabled]="f.invalid"
             *ngIf="!isLoading"
           >
-            Login
+            {{ isLogin ? 'Login': 'Signup'}}
           </ion-button>
         </ion-col>
       </ion-row>

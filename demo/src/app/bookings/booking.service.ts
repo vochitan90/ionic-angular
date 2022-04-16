@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 
 import { Booking } from './booking.model';
 import { AuthService } from '../auth/auth.service';
@@ -31,35 +31,42 @@ export class BookingService {
     dateTo: Date
   ) {
     let generatedId: string;
-    const newBooking = new Booking(
-      Math.random().toString(),
-      placeId,
-      this.authService.userId,
-      placeTitle,
-      placeImage,
-      firstName,
-      lastName,
-      guestNumber,
-      dateFrom,
-      dateTo
-    );
+    let newBooking: Booking;
 
-    return this.httpClient
-      .post<{ name: string }>(
-        'https://ionic-demo-c2342-default-rtdb.firebaseio.com/bookings.json',
-        { ...newBooking, id: null }
-      )
-      .pipe(
-        switchMap((resData) => {
-          generatedId = resData.name;
-          return this.bookings;
-        }),
-        take(1),
-        tap((bookings) => {
-          newBooking.id = generatedId;
-          this._bookings.next([...bookings, newBooking]);
-        })
-      );
+    return this.authService.userId.pipe(
+      take(1),
+      switchMap((userId: string) => {
+        if (!userId) {
+          //return of(null);
+          throw new Error('No user id found!');
+        }
+        newBooking = new Booking(
+          Math.random().toString(),
+          placeId,
+          userId,
+          placeTitle,
+          placeImage,
+          firstName,
+          lastName,
+          guestNumber,
+          dateFrom,
+          dateTo
+        );
+        return this.httpClient.post<{ name: string }>(
+          'https://ionic-demo-c2342-default-rtdb.firebaseio.com/bookings.json',
+          { ...newBooking, id: null }
+        );
+      }),
+      switchMap((resData) => {
+        generatedId = resData.name;
+        return this.bookings; // xem ham fetchBookings ben duoi
+      }),
+      take(1),
+      tap((bookings) => {
+        newBooking.id = generatedId;
+        this._bookings.next([...bookings, newBooking]);
+      })
+    );
   }
 
   cancelBooking(bookingId: string) {
@@ -83,24 +90,32 @@ export class BookingService {
   }
 
   fetchBookings() {
-    return this.httpClient
-      .get<{ [key: string]: Place }>(
-        `https://ionic-demo-c2342-default-rtdb.firebaseio.com/bookings.json?orderBy="userId"&equalTo="${this.authService.userId}"`
-      )
-      .pipe(
-        map((bookingData) => {
-          const bookings = [];
-          for (const key in bookingData) {
-            if (bookingData.hasOwnProperty(key)) {
-              bookings.push({ ...bookingData[key], id: key } as Place);
-            }
-          }
+    return this.authService.userId.pipe(
+      take(1),
+      switchMap((userId) => {
+        if (!userId) {
+          throw new Error('User not found!');
+        }
+        return this.httpClient
+          .get<{ [key: string]: Place }>(
+            `https://ionic-demo-c2342-default-rtdb.firebaseio.com/bookings.json?orderBy="userId"&equalTo="${userId}"`
+          )
+          .pipe(
+            map((bookingData) => {
+              const bookings = [];
+              for (const key in bookingData) {
+                if (bookingData.hasOwnProperty(key)) {
+                  bookings.push({ ...bookingData[key], id: key } as Place);
+                }
+              }
 
-          return bookings;
-        }),
-        tap((bookings) => {
-          this._bookings.next([...bookings]);
-        })
-      );
+              return bookings;
+            }),
+            tap((bookings) => {
+              this._bookings.next([...bookings]);
+            })
+          );
+      })
+    );
   }
 }
