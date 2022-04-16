@@ -76,7 +76,6 @@ export class BookingService {
       )
       .pipe(
         switchMap(() => {
-          debugger;
           console.log(this.bookings);
           return this.bookings;
         }),
